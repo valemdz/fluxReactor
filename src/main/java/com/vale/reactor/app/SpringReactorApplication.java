@@ -1,5 +1,8 @@
 package com.vale.reactor.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -22,9 +25,60 @@ public class SpringReactorApplication implements CommandLineRunner{
 	@Override
 	public void run(String... args) throws Exception {
 		
+		//practicaConIterable();
+		practicaConFluxReactivo();
+		
+	}
+	
+	
+	public void  practicaConIterable(){
+		
+		logger.info("PracticaConIterable IIIIIIIIIIIIIIIIII");
+		
+		List<String> cadenasStr = new ArrayList<>();
+		cadenasStr.add("Dani Sultano");
+		cadenasStr.add("Sandra Mengano");
+		cadenasStr.add("Pepita Fulano");
+		cadenasStr.add("Vale Torres");	
+		
+		Flux<String> cadenas = Flux.fromIterable( cadenasStr );
+		
+		Flux< Usuario > usuarios = cadenas.map( nombre -> new Usuario( nombre.toUpperCase().split(" ")[0],
+																	   nombre.toUpperCase().split(" ")[1] ) )
+								   .doOnNext( usuario ->{										   
+											   if( usuario == null ) {
+												   throw new RuntimeException("Los nombre no pueden estar vacios");
+											   }											   
+											   System.out.println( usuario );
+								   			  })
+								   .map( usuario -> { usuario.setNombre( usuario.getNombre().toLowerCase());
+									   				  return usuario; })
+								   .filter( usr -> usr.getNombre().length() > 4 ); 
+		//Sin onComplete
+		//cadenas.subscribe( logger::info , err -> logger.error( err.getMessage() ) );
+		
+		//Con onComplete
+		
+		usuarios.subscribe( usuario -> logger.info(usuario.toString() ), 
+						   err -> logger.error( err.getMessage() ),
+						   new Runnable() {
+							
+							@Override
+							public void run() {
+								logger.info("Se mostraron los nombre con exito!!!");
+								
+							}
+						});
+		
+	}
+	
+	public void  practicaConFluxReactivo(){
+		
+		logger.info("PracticaConFluxReactivo FFFFFFFFFFF");
+		
 		Flux< String > cadenas = Flux.just("Dani Sultano","Sandra Mengano","Pepita Fulano","Vale Torres" ); 
-				
-				
+		
+		
 		Flux< Usuario > usuarios = cadenas.map( nombre -> new Usuario( nombre.toUpperCase().split(" ")[0],
 																	   nombre.toUpperCase().split(" ")[1] ) )
 								   .doOnNext( usuario ->{										   
